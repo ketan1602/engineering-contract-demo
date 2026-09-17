@@ -9,7 +9,7 @@ from enum import Enum
 import structlog
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator, ConfigDict
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, Boolean, Enum as SAEnum
 from sqlalchemy.orm import declarative_base, Session, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
@@ -93,23 +93,23 @@ class RunCreate(BaseModel):
     max_tokens: Optional[int] = 1024
     temperature: Optional[float] = 0.7
 
-    @validator("temperature")
+    @field_validator("temperature")
+    @classmethod
     def temperature_range(cls, v):
-        if not 0.0 <= v <= 2.0:
+        if v is not None and not 0.0 <= v <= 2.0:
             raise ValueError("temperature must be between 0.0 and 2.0")
         return v
 
 
 class RunOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     model_id: str
     status: str
     created_at: datetime
-    result: Optional[str]
-    error: Optional[str]
-
-    class Config:
-        orm_mode = True
+    result: Optional[str] = None
+    error: Optional[str] = None
 
 
 class ModelOut(BaseModel):
