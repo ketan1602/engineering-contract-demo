@@ -25,11 +25,7 @@ class RunRecord(Base):
 
 
 def derive_status(run: RunRecord) -> str:
-    """Single authoritative source for display status derivation.
-
-    Eliminates the duplicated if/elif chain that existed in every
-    route handler that needed to compute a derived status.
-    """
+    """Single source for display status — eliminates duplication across route handlers."""
     if run.cancelled and run.status != RunStatus.COMPLETED:
         return RunStatus.CANCELLING
     if run.status == RunStatus.FAILED and run.retries > 0:

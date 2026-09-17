@@ -38,8 +38,10 @@ def get_result(run_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
 
     if run.status != RunStatus.COMPLETED:
-        display = derive_status(run)
-        raise HTTPException(status_code=404, detail=f"Result not available — run is {display}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Result not available — run is {derive_status(run)}",
+        )
 
     logger.info("result_fetched", run_id=run_id, model_id=run.model_id)
     return run

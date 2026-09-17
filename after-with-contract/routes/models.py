@@ -16,7 +16,6 @@ def list_models():
     return list(AVAILABLE_MODELS.values())
 
 
-# /default registered before /{model_id} — specific path takes priority
 @router.get("/default", response_model=ModelOut)
 def get_default_model():
     model = AVAILABLE_MODELS.get(DEFAULT_MODEL)

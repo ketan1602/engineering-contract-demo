@@ -38,8 +38,6 @@ def get_result(run_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
 
     if run.status != RunStatus.COMPLETED:
-        # Duplicate of the status logic in runs.py — already drifted slightly:
-        # runs.py also handles "completed_empty"; this version does not.
         if run.cancelled and run.status != RunStatus.COMPLETED:
             display = RunStatus.CANCELLING
         elif run.status == RunStatus.FAILED and run.retries > 0:

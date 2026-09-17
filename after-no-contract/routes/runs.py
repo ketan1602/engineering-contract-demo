@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, status
@@ -11,7 +12,7 @@ from database import get_db
 from orm_models import RunRecord, RunStatus
 from schemas import RunCreate, RunOut
 from broker import broker_channel
-from settings import MAX_CONCURRENT_RUNS
+from settings import MAX_CONCURRENT_RUNS, AVAILABLE_MODELS
 
 logger = structlog.get_logger()
 
@@ -32,7 +33,7 @@ def list_runs(model_id: Optional[str] = None, limit: int = 50, db: Session = Dep
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=RunOut)
 def create_run(payload: RunCreate, db: Session = Depends(get_db)):
-    if payload.model_id not in ["gpt-4o", "claude-sonnet-4-6", "llama-3-70b"]:
+    if payload.model_id not in AVAILABLE_MODELS:
         raise HTTPException(status_code=400, detail=f"Model {payload.model_id} not available")
 
     try:
@@ -84,8 +85,6 @@ def create_run(payload: RunCreate, db: Session = Depends(get_db)):
     return run
 
 
-# BUG: /{run_id} is registered before /pending.
-# GET /runs/pending will match this handler with run_id="pending" and return 404.
 @router.get("/{run_id}", response_model=RunOut)
 def get_run(run_id: str, db: Session = Depends(get_db)):
     try:
@@ -107,8 +106,6 @@ def get_run(run_id: str, db: Session = Depends(get_db)):
     return run
 
 
-# UNREACHABLE: FastAPI matched /pending to /{run_id} above.
-# This endpoint will never be called.
 @router.get("/pending", response_model=List[RunOut])
 def get_pending_runs(db: Session = Depends(get_db)):
     try:
@@ -140,7 +137,7 @@ def cancel_run(run_id: str, db: Session = Depends(get_db)):
     try:
         run.cancelled = True
         run.status = RunStatus.CANCELLING
-        run.updated_at = __import__("datetime").datetime.utcnow()
+        run.updated_at = datetime.utcnow()
         db.commit()
         db.refresh(run)
     except SQLAlchemyError as e:

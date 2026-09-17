@@ -85,7 +85,6 @@ def create_run(payload: RunCreate, db: Session = Depends(get_db)):
     return run
 
 
-# /pending registered before /{run_id} — specific path takes priority over parameterised
 @router.get("/pending", response_model=List[RunOut])
 def get_pending_runs(db: Session = Depends(get_db)):
     try:

@@ -16,8 +16,6 @@ def list_models():
     return list(AVAILABLE_MODELS.values())
 
 
-# BUG: /default is registered after /{model_id}.
-# GET /models/default will match /{model_id} with model_id="default" and return 404.
 @router.get("/{model_id}", response_model=ModelOut)
 def get_model(model_id: str):
     model = AVAILABLE_MODELS.get(model_id)
@@ -26,7 +24,6 @@ def get_model(model_id: str):
     return model
 
 
-# UNREACHABLE: FastAPI matched /default to /{model_id} above.
 @router.get("/default", response_model=ModelOut)
 def get_default_model():
     model = AVAILABLE_MODELS.get(DEFAULT_MODEL)

@@ -5,8 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 from routes import runs, results, models, config
 
-# /health route not included — dropped during the split
-
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
